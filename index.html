@@ -254,6 +254,7 @@
       <div class="backup-links">
         <button class="btn-ghost" id="btnBackup">💾 Salvar backup</button>
         <button class="btn-ghost" id="btnRestore">↩️ Restaurar backup</button>
+        <button class="btn-ghost" id="btnPaste">📋 Restaurar colando texto</button>
         <input type="file" id="fileRestore" accept=".json,application/json">
       </div>
     </div>
@@ -1243,6 +1244,60 @@ function Ce() {
         n.readAsText(t),
         (e.target.value = ""));
     }));
+  {
+    const bpst = document.getElementById("btnPaste");
+    if (bpst)
+      bpst.addEventListener("click", () => {
+        const bg = document.createElement("div");
+        ((bg.className = "modal-bg"),
+          (bg.innerHTML =
+            '<div class="modal" role="dialog" aria-label="Colar backup">' +
+            '<h3>\u{1F4CB} Colar backup</h3>' +
+            '<div class="mmeta">Abra o backup do app antigo, toque e segure, <b>Selecionar tudo</b>, <b>Copiar</b> — e cole aqui.</div>' +
+            '<textarea id="pasteBox" placeholder="Cole aqui o conte\u00fado do backup\u2026" style="width:100%;min-height:150px"></textarea>' +
+            '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">' +
+            '<button class="btn-ghost" id="pClose">Cancelar</button>' +
+            '<button class="btn-primary" id="pOk" style="width:auto;padding:10px 18px">Restaurar</button>' +
+            "</div></div>"),
+          document.getElementById("compras-app").appendChild(bg),
+          bg.addEventListener("click", (ev) => {
+            if (ev.target === bg) bg.remove();
+          }),
+          bg.querySelector("#pClose").addEventListener("click", () => bg.remove()),
+          bg.querySelector("#pOk").addEventListener("click", () => {
+            let a = null;
+            try {
+              a = JSON.parse(bg.querySelector("#pasteBox").value.trim());
+            } catch {
+              a = null;
+            }
+            if (!a || !Array.isArray(a.items)) {
+              y("Esse texto n\u00e3o parece um backup v\u00e1lido \u{1F914}");
+              return;
+            }
+            const vistos = new Set(m.map((i) => i.id));
+            let novas = 0;
+            (a.items.forEach((i) => {
+              vistos.has(i.id) || (m.push(i), novas++);
+            }),
+              Object.assign(k, a.merchantMap || {}),
+              m.sort((i, c) => (i.dateISO + i.time < c.dateISO + c.time ? 1 : -1)),
+              _(),
+              W(),
+              L(),
+              N(),
+              bg.remove(),
+              y(
+                novas +
+                  " compra" +
+                  (novas === 1 ? "" : "s") +
+                  " restaurada" +
+                  (novas === 1 ? "" : "s") +
+                  " \u2705",
+              ));
+          }));
+      });
+  }
   let ge = null;
   function y(e) {
     document.querySelectorAll("#compras-app .toast").forEach((n) => n.remove());
