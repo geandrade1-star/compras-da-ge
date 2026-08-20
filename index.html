@@ -254,6 +254,7 @@
       <div class="backup-links">
         <button class="btn-ghost" id="btnBackup">💾 Salvar backup</button>
         <button class="btn-ghost" id="btnRestore">↩️ Restaurar backup</button>
+        <button class="btn-ghost" id="btnCopy">📋 Copiar backup</button>
         <button class="btn-ghost" id="btnPaste">📋 Restaurar colando texto</button>
         <input type="file" id="fileRestore" accept=".json,application/json">
       </div>
@@ -1245,6 +1246,38 @@ function Ce() {
         (e.target.value = ""));
     }));
   {
+    const bcp = document.getElementById("btnCopy");
+    if (bcp)
+      bcp.addEventListener("click", async () => {
+        const e = JSON.stringify(
+          { v: 1, exportedAt: new Date().toISOString(), items: m, merchantMap: k },
+          null,
+          1,
+        );
+        let deu = !1;
+        try {
+          (await navigator.clipboard.writeText(e), (deu = !0));
+        } catch {}
+        if (!deu) {
+          const ta = document.createElement("textarea");
+          ((ta.value = e),
+            (ta.style.position = "fixed"),
+            (ta.style.opacity = "0"),
+            document.body.appendChild(ta),
+            ta.focus(),
+            ta.select(),
+            (deu = document.execCommand("copy")),
+            ta.remove());
+        }
+        if (deu) {
+          ((C = { at: Date.now(), count: m.length }),
+            localStorage.setItem(ie, JSON.stringify(C)),
+            ue(),
+            y("Backup copiado! \u{1F4CB} Cole numa nota pra guardar."));
+        } else {
+          y("N\u00e3o consegui copiar \u{1F614} tenta o \u{1F4BE}");
+        }
+      });
     const bpst = document.getElementById("btnPaste");
     if (bpst)
       bpst.addEventListener("click", () => {
