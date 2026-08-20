@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Controle de Compras</title>
+<meta name="theme-color" content="#1B5C9E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Compras">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-512.png">
+<style>
+  :root{
+    --bg:#F3F6FA; --surface:#FFFFFF; --surface2:#EAF0F6;
+    --ink:#131C26; --muted:#5C6B7A; --line:#D9E2EB;
+    --accent:#1B5C9E; --accent-ink:#FFFFFF; --accent-soft:#E1ECF7;
+    --danger:#A63D2A; --chip:#ECF2F8;
+    --warn-bg:#FFF4DE; --warn-ink:#7A5410; --warn-line:#EBD9B4;
+    --shadow:0 1px 3px rgba(19,28,38,.08), 0 6px 20px rgba(19,28,38,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0F151C; --surface:#161E28; --surface2:#1D2733;
+      --ink:#E7EDF4; --muted:#90A0B1; --line:#283440;
+      --accent:#5BA8E8; --accent-ink:#0A1420; --accent-soft:#1B2C3F;
+      --danger:#E07B5F; --chip:#212E3B;
+      --warn-bg:#332A16; --warn-ink:#EFCB7E; --warn-line:#4A3D1F;
+      --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#F3F6FA; --surface:#FFFFFF; --surface2:#EAF0F6;
+    --ink:#131C26; --muted:#5C6B7A; --line:#D9E2EB;
+    --accent:#1B5C9E; --accent-ink:#FFFFFF; --accent-soft:#E1ECF7;
+    --danger:#A63D2A; --chip:#ECF2F8;
+    --warn-bg:#FFF4DE; --warn-ink:#7A5410; --warn-line:#EBD9B4;
+    --shadow:0 1px 3px rgba(19,28,38,.08), 0 6px 20px rgba(19,28,38,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F151C; --surface:#161E28; --surface2:#1D2733;
+    --ink:#E7EDF4; --muted:#90A0B1; --line:#283440;
+    --accent:#5BA8E8; --accent-ink:#0A1420; --accent-soft:#1B2C3F;
+    --danger:#E07B5F; --chip:#212E3B;
+    --warn-bg:#332A16; --warn-ink:#EFCB7E; --warn-line:#4A3D1F;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  #compras-app *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg)}
+  #compras-app{
+    background:var(--bg); color:var(--ink); min-height:100dvh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:16px; line-height:1.45;
+    padding-bottom:calc(84px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+  }
+  #compras-app .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+  #compras-app header.app{padding:calc(20px + env(safe-area-inset-top)) 0 6px}
+  #compras-app header.app h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0}
+  #compras-app header.app .sub{color:var(--muted);font-size:13px;margin-top:2px}
+
+  #compras-app .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px;margin:12px 0}
+  #compras-app .card h2{font-size:15px;font-weight:700;margin:0 0 10px;letter-spacing:-.01em}
+  #compras-app .hint{color:var(--muted);font-size:13px;margin:6px 0 0}
+
+  #compras-app textarea{
+    width:100%;min-height:130px;border:1.5px dashed var(--line);border-radius:10px;
+    background:var(--surface2);color:var(--ink);padding:12px;font-size:16px;
+    font-family:inherit;resize:vertical;
+  }
+  #compras-app textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+
+  #compras-app button{font-family:inherit;font-size:16px;cursor:pointer;border:none;border-radius:11px;padding:13px 16px;color:inherit;background:none}
+  #compras-app button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #compras-app .btn-primary{background:var(--accent);color:var(--accent-ink);font-weight:700;width:100%;margin-top:10px}
+  #compras-app .btn-secondary{background:var(--surface2);color:var(--ink);font-weight:600;width:100%;margin-top:8px;border:1px solid var(--line)}
+  #compras-app .btn-ghost{background:none;color:var(--accent);font-weight:600;padding:8px 10px}
+  #compras-app .btn-danger-ghost{background:none;color:var(--danger);font-weight:600;padding:8px 10px}
+  #compras-app button:disabled{opacity:.45;cursor:default}
+
+  #compras-app .pend{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--surface2)}
+  #compras-app .pend .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  #compras-app .pend .merch{font-weight:700;font-size:14px;overflow-wrap:anywhere}
+  #compras-app .pend .val{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #compras-app .pend .meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+  #compras-app .pend label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+  #compras-app .pend input[type=text], #compras-app .pend select, #compras-app .modal input[type=text], #compras-app .modal select, #compras-app input[type=date]{
+    width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surface);
+    color:var(--ink);padding:10px 12px;font-size:16px;font-family:inherit;
+  }
+  #compras-app .pend input:focus,#compras-app .pend select:focus,#compras-app .modal input:focus,#compras-app .modal select:focus,#compras-app input[type=date]:focus{outline:2px solid var(--accent);outline-offset:1px}
+  #compras-app .dup{border-color:var(--danger)}
+  #compras-app .dup .dupmsg{color:var(--danger);font-size:12.5px;font-weight:600;margin-top:6px}
+
+  #compras-app .month-nav{display:flex;align-items:center;justify-content:space-between;margin:14px 0 4px}
+  #compras-app .month-nav .mname{font-weight:800;font-size:17px;letter-spacing:-.01em}
+  #compras-app .month-nav button{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:6px 14px;font-size:18px;line-height:1;color:var(--ink)}
+  #compras-app .month-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin:8px 0 14px}
+  #compras-app .month-total .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+  #compras-app .month-total .tot{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
+
+  #compras-app .daygroup{margin:16px 0 4px}
+  #compras-app .dayhead{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  #compras-app .item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:7px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;font-size:inherit;color:inherit}
+  #compras-app .item .l{min-width:0}
+  #compras-app .item .desc{font-weight:700;font-size:15px;overflow-wrap:anywhere;display:block}
+  #compras-app .item .m2{color:var(--muted);font-size:12.5px;margin-top:2px;overflow-wrap:anywhere;display:block}
+  #compras-app .item .val{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:15px}
+  #compras-app .chip{display:inline-block;background:var(--chip);border-radius:99px;padding:1px 8px;font-size:11.5px;font-weight:600;margin-right:5px}
+
+  #compras-app .empty{color:var(--muted);text-align:center;padding:28px 10px;font-size:14px}
+
+  #compras-app .bakwarn{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:12px;padding:12px 14px;margin:12px 0;font-size:13.5px;color:var(--warn-ink)}
+  #compras-app .bakwarn b{display:block;margin-bottom:2px}
+  #compras-app .bakwarn button{background:var(--warn-ink);color:var(--warn-bg);font-size:14px;font-weight:700;padding:9px 14px;margin-top:8px;border-radius:9px}
+
+  #compras-app .seg{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 10px}
+  #compras-app .seg button{background:var(--surface2);border:1px solid var(--line);border-radius:99px;padding:8px 13px;font-size:13.5px;font-weight:600;color:var(--ink)}
+  #compras-app .seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  #compras-app .daterow{display:flex;gap:8px;margin:8px 0}
+  #compras-app .daterow>div{flex:1}
+  #compras-app .daterow label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+  #compras-app select#repCard{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);padding:10px 12px;font-size:16px;margin:4px 0 2px;font-family:inherit}
+
+  #compras-app .prev{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+  #compras-app .prev .big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
+  #compras-app .prev .n{color:var(--muted);font-size:13px}
+  #compras-app .catrow{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;font-variant-numeric:tabular-nums}
+  #compras-app .catrow .cn{color:var(--muted)}
+  #compras-app .catrow .cv{font-weight:700}
+
+  #compras-app nav.tabs{
+    position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+    border-top:1px solid var(--line);display:flex;
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:50;
+  }
+  #compras-app nav.tabs button{flex:1;background:none;color:var(--muted);font-size:12px;font-weight:600;padding:7px 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px}
+  #compras-app nav.tabs button .ic{font-size:21px;line-height:1}
+  #compras-app nav.tabs button[aria-selected=true]{color:var(--accent);background:var(--accent-soft)}
+
+  #compras-app .modal-bg{position:fixed;inset:0;background:rgba(10,16,19,.5);z-index:80;display:flex;align-items:flex-end;justify-content:center}
+  #compras-app .modal{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:560px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto}
+  #compras-app .modal h3{margin:0 0 4px;font-size:17px;font-weight:800}
+  #compras-app .modal .mmeta{color:var(--muted);font-size:13px;margin-bottom:10px}
+  #compras-app .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+  #compras-app .modal .rowbtns{display:flex;gap:8px;margin-top:16px}
+  #compras-app .modal .rowbtns .btn-primary{margin-top:0;flex:1}
+
+  #compras-app .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:600;z-index:100;box-shadow:var(--shadow);max-width:90vw;text-align:center}
+
+  #compras-app .backup-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  #compras-app input[type=file]{display:none}
+
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    body *{visibility:hidden}
+    #printArea, #printArea *{visibility:visible}
+    #printArea{display:block !important;position:absolute;left:0;top:0;width:100%;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:#111;background:#fff}
+    #printArea .ph{border-bottom:2.5px solid #1B5C9E;padding-bottom:10px;margin-bottom:14px}
+    #printArea h1{font-size:21px;margin:0;color:#1B5C9E}
+    #printArea .pmeta{font-size:12px;color:#555;margin-top:3px}
+    #printArea .ptot{font-size:16px;font-weight:800;margin:10px 0 4px}
+    #printArea table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+    #printArea th{text-align:left;border-bottom:1.5px solid #999;padding:5px 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#444}
+    #printArea td{border-bottom:1px solid #ddd;padding:6px;vertical-align:top}
+    #printArea td.num,#printArea th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    #printArea .sub{color:#666;font-size:10.5px}
+    #printArea .catsum td{font-weight:600}
+    #printArea tr.total td{font-weight:800;border-top:2px solid #1B5C9E;border-bottom:none;font-size:13px}
+    #printArea .foot{margin-top:14px;font-size:10px;color:#888}
+  }
+  @media (prefers-reduced-motion: no-preference){
+    #compras-app .toast{animation:gc-pop .18s ease-out}
+    @keyframes gc-pop{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  }
+  /* --- caixinha "chegou" --- */
+  #compras-app .itemrow{display:flex;align-items:center;gap:9px}
+  #compras-app .itemrow .item{flex:1;min-width:0;margin:0}
+  #compras-app .chk{flex:0 0 auto;width:28px;height:28px;border:2px solid var(--line);border-radius:9px;background:var(--surface);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;color:transparent;padding:0;transition:background .12s,border-color .12s}
+  #compras-app .chk[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+  #compras-app .daygroup .itemrow{margin:7px 0}
+  #compras-app .item.done .desc{text-decoration:line-through;opacity:.55}
+  #compras-app .filterbar{display:flex;justify-content:flex-end;margin:2px 0 -6px}
+  #compras-app .filterbar button{font-size:12.5px;font-weight:700;color:var(--muted);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:7px 13px}
+  #compras-app .filterbar button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+
+</style>
+</head>
+<body>
+<div id="compras-app">
+<div class="wrap">
+  <header class="app">
+    <h1>🧾 Controle de Compras</h1>
+    <div class="sub" id="headSub">Cole o SMS do cartão e pronto</div>
+  </header>
+
+  <div class="bakwarn" id="bakWarn" hidden>
+    <b>🔔 Você tem compras sem backup</b>
+    <span id="bakWarnMsg"></span>
+    <button id="bakWarnBtn">💾 Salvar backup agora</button>
+  </div>
+
+  <!-- ABA LANÇAR -->
+  <section id="tab-add">
+    <div class="card">
+      <h2>Colar aviso do cartão</h2>
+      <textarea id="smsBox" placeholder="Cole aqui o SMS do banco…&#10;&#10;Ex.: Compra aprovada no seu AZUL INFINITE final 9009 - IFD*CORATINA PIZZARIA valor RS 125,25 em 24/07, as 18h30."></textarea>
+      <button class="btn-primary" id="btnParse">Ler compras do texto</button>
+      <p class="hint">Pode colar vários avisos de uma vez — ele separa sozinho. 😉</p>
+    </div>
+    <div id="pendWrap"></div>
+  </section>
+
+  <!-- ABA COMPRAS -->
+  <section id="tab-list" hidden>
+    <div class="month-nav">
+      <button id="mPrev" aria-label="Mês anterior">‹</button>
+      <div class="mname" id="mName"></div>
+      <button id="mNext" aria-label="Próximo mês">›</button>
+    </div>
+    <div class="month-total"><span class="lbl">Total do mês</span><span class="tot" id="mTotal">R$ 0,00</span></div>
+    <div class="filterbar" id="filterBar" hidden><button id="btnPend" type="button" aria-pressed="false">📦 Só o que falta chegar</button></div>
+    <div id="listWrap"></div>
+  </section>
+
+  <!-- ABA RELATÓRIO -->
+  <section id="tab-report" hidden>
+    <div class="card">
+      <h2>Período do relatório</h2>
+      <div class="seg" id="segPeriod">
+        <button data-p="mes" aria-pressed="true">Este mês</button>
+        <button data-p="passado" aria-pressed="false">Mês passado</button>
+        <button data-p="30" aria-pressed="false">Últimos 30 dias</button>
+        <button data-p="custom" aria-pressed="false">Escolher datas</button>
+      </div>
+      <div class="daterow" id="customDates" hidden>
+        <div><label for="dIni">De</label><input type="date" id="dIni"></div>
+        <div><label for="dFim">Até</label><input type="date" id="dFim"></div>
+      </div>
+      <select id="repCard" aria-label="Filtrar por cartão"></select>
+      <div class="prev" id="repPrev"></div>
+      <button class="btn-primary" id="btnPdf">📄 Gerar PDF</button>
+      <button class="btn-secondary" id="btnPng">🖼️ Salvar como imagem</button>
+      <p class="hint" id="pdfHint">O PDF abre a tela de impressão do celular — lá você toca em <b>Compartilhar → Salvar em Arquivos</b> (vira PDF) ou manda direto no WhatsApp.</p>
+    </div>
+    <div class="card">
+      <h2>Backup dos dados</h2>
+      <p class="hint" style="margin-top:0">As compras ficam salvas neste aparelho. De vez em quando, salve um backup pra não perder nada.</p>
+      <div class="backup-links">
+        <button class="btn-ghost" id="btnBackup">💾 Salvar backup</button>
+        <button class="btn-ghost" id="btnRestore">↩️ Restaurar backup</button>
+        <input type="file" id="fileRestore" accept=".json,application/json">
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Navegação">
+  <button role="tab" aria-selected="true" data-tab="add"><span class="ic">➕</span>Lançar</button>
+  <button role="tab" aria-selected="false" data-tab="list"><span class="ic">🧾</span>Compras</button>
+  <button role="tab" aria-selected="false" data-tab="report"><span class="ic">📄</span>Relatório</button>
+</nav>
+
+<div id="printArea"></div>
+</div>
+<script>
+(function(){
+let be = !1;
+let pendOnly = !1;
+function Ce() {
+  if (be || typeof document > "u") return;
+  be = !0;
+  const oe = "gc_purchases_v1",
+    re = "gc_merchantmap_v1",
+    se = "gc_rates_v1",
+    ie = "gc_lastbackup_v1",
+    ce = [
+      "🍕 Alimentação",
+      "🛒 Mercado",
+      "📦 Compras online",
+      "🚗 Transporte",
+      "💊 Saúde",
+      "👗 Roupas",
+      "🏠 Casa",
+      "💄 Beleza",
+      "📱 Assinaturas",
+      "🎬 Lazer",
+      "📚 Educação",
+      "💼 Trabalho",
+      "🐶 Pet",
+      "❓ Outros",
+    ],
+    ve = [
+      [
+        /IFD|IFOOD|PIZZA|RESTAUR|BURGER|LANCH|PADAR|CAFE|SUSHI|CHURRASC|ACAI|SORVET/i,
+        "🍕 Alimentação",
+      ],
+      [
+        /TIKTOK SHOP|SHOPEE|MERCADOLIV|MERCADO LIV|AMAZON|ALIEXPRESS|MAGALU|SHEIN|OLIST/i,
+        "📦 Compras online",
+      ],
+      [
+        /MERCADO|SUPERMERC|ATACAD|CARREFOUR|ASSAI|PAO DE ACUCAR|HORTIFRUT|SACOLAO|EMPORIO/i,
+        "🛒 Mercado",
+      ],
+      [
+        /UBER|99APP|99\*|POSTO|IPIRANGA|SHELL|PETROBRAS|ESTACION|PEDAGIO|SEM PARAR/i,
+        "🚗 Transporte",
+      ],
+      [
+        /DROGA|FARMAC|PAGUE MENOS|RAIA|PACHECO|LABORAT|CLINIC|HOSPITAL|ODONTO/i,
+        "💊 Saúde",
+      ],
+      [
+        /NETFLIX|SPOTIFY|APPLE\.COM|APPLE COM|GOOGLE|YOUTUBE|PRIME|DISNEY|HBO|MAX\b|CANVA|OPENAI|ANTHROPIC|HIGGSFIELD|HEYGEN|HAILUO|OPENART|KLING|ELEVENLABS|MIDJOURNEY|RUNWAY|FREEPIK/i,
+        "📱 Assinaturas",
+      ],
+      [/PETSHOP|PET SHOP|PETZ|COBASI|VETERINAR/i, "🐶 Pet"],
+      [/CINEMA|CINEMARK|INGRESSO|SHOW|TEATRO|PARQUE/i, "🎬 Lazer"],
+      [
+        /RENNER|RIACHUELO|C&A|ZARA|HERING|MARISA|CENTAURO|NIKE|ADIDAS/i,
+        "👗 Roupas",
+      ],
+      [
+        /BOTICARIO|SEPHORA|NATURA|AVON|SALAO|CABELEIR|MANICURE|ESTETIC/i,
+        "💄 Beleza",
+      ],
+    ];
+  let m = G(oe, []),
+    k = G(re, {}),
+    Z = G(se, { USD: 5.5, EUR: 6, GBP: 7 }),
+    C = G(ie, { at: 0, count: 0 }),
+    v = [],
+    S = he(new Date()),
+    P = "mes";
+  function G(e, t) {
+    try {
+      return JSON.parse(localStorage.getItem(e)) ?? t;
+    } catch {
+      return t;
+    }
+  }
+  function _() {
+    (localStorage.setItem(oe, JSON.stringify(m)),
+      localStorage.setItem(re, JSON.stringify(k)),
+      localStorage.setItem(se, JSON.stringify(Z)));
+  }
+  function he(e) {
+    return new Date(e.getFullYear(), e.getMonth(), 1);
+  }
+  const J = {};
+  function f(e, t) {
+    return (
+      (t = t || "BRL"),
+      J[t] ||
+        (J[t] = new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: t,
+        })),
+      J[t].format(e)
+    );
+  }
+  function w(e) {
+    return e.cur && e.cur !== "BRL";
+  }
+  function R(e) {
+    return w(e) ? (e.valueBRL != null ? e.valueBRL : 0) : e.value;
+  }
+  function M(e) {
+    return f(
+      e.reduce((t, n) => t + R(n), 0),
+      "BRL",
+    );
+  }
+  function X(e) {
+    const t = {};
+    return (
+      e.forEach((n) => {
+        t[n.cat] = (t[n.cat] || 0) + R(n);
+      }),
+      Object.entries(t)
+        .map(([n, a]) => [n, f(a, "BRL"), a])
+        .sort((n, a) => a[2] - n[2])
+    );
+  }
+  const xe = { USD: "dólar", EUR: "euro", GBP: "libra" };
+  function pe(e) {
+    const t = parseFloat(
+      String(e)
+        .replace(/\./g, ",")
+        .replace(/,(?=\d{3}\b)/g, "")
+        .replace(",", "."),
+    );
+    return isFinite(t) ? t : 0;
+  }
+  function $(e) {
+    return Math.round(e * 100) / 100;
+  }
+  function j(e) {
+    return String(e.toFixed(2)).replace(".", ",");
+  }
+  function b(e) {
+    return (
+      e.getFullYear() +
+      "-" +
+      String(e.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(e.getDate()).padStart(2, "0")
+    );
+  }
+  function O(e) {
+    const [t, n, a] = e.split("-").map(Number);
+    return new Date(t, n - 1, a);
+  }
+  function h(e) {
+    const t = O(e);
+    return (
+      String(t.getDate()).padStart(2, "0") +
+      "/" +
+      String(t.getMonth() + 1).padStart(2, "0") +
+      "/" +
+      t.getFullYear()
+    );
+  }
+  function u(e) {
+    return String(e)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function Ee() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function ye(e) {
+    const t = e.toUpperCase().trim();
+    if (k[t]) return k[t];
+    for (const [n, a] of ve) if (n.test(e)) return a;
+    return "❓ Outros";
+  }
+  function Ae(e) {
+    const t = e
+        .split(/(?=compra aprovada)/i)
+        .map((o) => o.trim())
+        .filter((o) => /valor\s+\S/i.test(o)),
+      n = [],
+      a = new Date();
+    a.setHours(23, 59, 59);
+    for (const o of t) {
+      const s = o.replace(/\s+/g, " "),
+        i = s.match(
+          /valor\s+([RU][S$D]{0,3}|EUR|€|£|GBP)\s*([\d.]+,\d{2}|[\d.]+)/i,
+        );
+      if (!i) continue;
+      const c = parseFloat(i[2].replace(/\./g, "").replace(",", "."));
+      if (!isFinite(c) || c <= 0) continue;
+      const d = i[1].toUpperCase(),
+        x =
+          d[0] === "U"
+            ? "USD"
+            : d[0] === "R"
+              ? "BRL"
+              : d[0] === "£" || d === "GBP"
+                ? "GBP"
+                : "EUR",
+        T = s.match(/no seu\s+(.+?)\s+final\s+(\d{4})/i),
+        te = T ? T[1].trim() : "",
+        ae = T ? T[2] : (s.match(/final\s+(\d{4})/i) || [])[1] || "";
+      let I = "";
+      const ne = s.match(/final\s+\d{4}\s*[-–—]\s*(.+?)\s+valor\s/i);
+      if (ne) I = ne[1].trim();
+      else {
+        const l = s.match(/[-–—]\s*([^-–—]+?)\s+valor\s/i);
+        l && (I = l[1].trim());
+      }
+      I || (I = "(não identificado)");
+      const E = s.match(/em\s+(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/i);
+      let A = new Date();
+      if (E) {
+        let l = E[3]
+          ? E[3].length === 2
+            ? 2e3 + +E[3]
+            : +E[3]
+          : a.getFullYear();
+        ((A = new Date(l, +E[2] - 1, +E[1])),
+          !E[3] && A > a && A.setFullYear(A.getFullYear() - 1));
+      }
+      const r = s.match(/[àa]s\s+(\d{1,2})h(\d{2})/i),
+        z = r ? String(r[1]).padStart(2, "0") + ":" + r[2] : "",
+        D = b(A),
+        F = m.some(
+          (l) =>
+            l.value === c &&
+            (l.cur || "BRL") === x &&
+            l.dateISO === D &&
+            l.time === z &&
+            l.merchant.toUpperCase() === I.toUpperCase(),
+        ),
+        H = x === "BRL" ? 1 : Z[x] || 5.5;
+      n.push({
+        id: Ee(),
+        cardName: te,
+        cardFinal: ae,
+        merchant: I,
+        value: c,
+        cur: x,
+        rate: x === "BRL" ? void 0 : H,
+        valueBRL: x === "BRL" ? void 0 : $(c * H),
+        dateISO: D,
+        time: z,
+        cat: ye(I),
+        desc: "",
+        isDup: F,
+      });
+    }
+    return n;
+  }
+  const de = {
+    add: document.getElementById("tab-add"),
+    list: document.getElementById("tab-list"),
+    report: document.getElementById("tab-report"),
+  };
+  (document.querySelectorAll("#compras-app nav.tabs button").forEach((e) =>
+    e.addEventListener("click", () => {
+      document
+        .querySelectorAll("#compras-app nav.tabs button")
+        .forEach((t) =>
+          t.setAttribute("aria-selected", t === e ? "true" : "false"),
+        );
+      for (const t in de) de[t].hidden = t !== e.dataset.tab;
+      (e.dataset.tab === "list" && N(),
+        e.dataset.tab === "report" && L(),
+        window.scrollTo({ top: 0 }));
+    }),
+  ),
+    document.getElementById("btnParse").addEventListener("click", () => {
+      const e = document.getElementById("smsBox").value,
+        t = Ae(e);
+      if (!t.length) {
+        y(
+          "Não achei nenhuma compra nesse texto 🤔 Confere se colou o SMS inteiro?",
+        );
+        return;
+      }
+      ((v = v.concat(t)),
+        (document.getElementById("smsBox").value = ""),
+        Q(),
+        y(
+          t.length === 1 ? "1 compra lida ✅" : t.length + " compras lidas ✅",
+        ));
+    }));
+  function Q() {
+    const e = document.getElementById("pendWrap");
+    if (!v.length) {
+      e.innerHTML = "";
+      return;
+    }
+    let t = '<div class="card"><h2>Confira e complete (' + v.length + ")</h2>";
+    (v.forEach((a, o) => {
+      t +=
+        '<div class="pend' +
+        (a.isDup ? " dup" : "") +
+        '"><div class="top"><span class="merch">' +
+        u(a.merchant) +
+        '</span><span class="val">' +
+        f(a.value, a.cur) +
+        '</span></div><div class="meta">' +
+        h(a.dateISO) +
+        (a.time ? " às " + a.time : "") +
+        (a.cardName || a.cardFinal
+          ? " · 💳 " + u(a.cardName) + (a.cardFinal ? " •" + a.cardFinal : "")
+          : "") +
+        "</div>" +
+        (a.isDup
+          ? '<div class="dupmsg">⚠️ Parece repetida — já existe uma compra igual salva. Se for engano, toque em Descartar.</div>'
+          : "") +
+        (w(a)
+          ? '<label for="r' +
+            o +
+            '">Cotação do ' +
+            (xe[a.cur] || a.cur) +
+            ' (R$)</label><input type="text" inputmode="decimal" id="r' +
+            o +
+            '" data-i="' +
+            o +
+            '" class="prate" value="' +
+            j(a.rate) +
+            '"><div class="meta conv" id="cv' +
+            o +
+            '">' +
+            f(a.value, a.cur) +
+            " × " +
+            j(a.rate) +
+            " = <b>" +
+            f(a.valueBRL, "BRL") +
+            "</b> (é o valor que entra na soma — dá pra ajustar depois pela fatura)</div>"
+          : "") +
+        '<label for="d' +
+        o +
+        '">O que foi essa compra?</label><input type="text" id="d' +
+        o +
+        '" data-i="' +
+        o +
+        '" class="pdesc" placeholder="ex.: pizza com a família" value="' +
+        u(a.desc) +
+        '"><label for="c' +
+        o +
+        '">Categoria</label><select id="c' +
+        o +
+        '" data-i="' +
+        o +
+        '" class="pcat">' +
+        ce
+          .map(
+            (s) =>
+              "<option" +
+              (s === a.cat ? " selected" : "") +
+              ">" +
+              s +
+              "</option>",
+          )
+          .join("") +
+        '</select><button class="btn-danger-ghost pdel" data-i="' +
+        o +
+        '">Descartar</button></div>';
+    }),
+      (t +=
+        '<button class="btn-primary" id="btnSaveAll">Salvar ' +
+        (v.length === 1 ? "compra" : "todas") +
+        "</button></div>"),
+      (e.innerHTML = t),
+      e.querySelectorAll(".pdesc").forEach((a) =>
+        a.addEventListener("input", (o) => {
+          v[+o.target.dataset.i].desc = o.target.value;
+        }),
+      ),
+      e.querySelectorAll(".prate").forEach((a) =>
+        a.addEventListener("input", (o) => {
+          const s = v[+o.target.dataset.i],
+            i = pe(o.target.value);
+          if (i > 0) {
+            ((s.rate = i), (s.valueBRL = $(s.value * i)));
+            const c = document.getElementById("cv" + o.target.dataset.i);
+            c &&
+              (c.innerHTML =
+                f(s.value, s.cur) +
+                " × " +
+                j(i) +
+                " = <b>" +
+                f(s.valueBRL, "BRL") +
+                "</b> (é o valor que entra na soma — dá pra ajustar depois pela fatura)");
+          }
+        }),
+      ),
+      e.querySelectorAll(".pcat").forEach((a) =>
+        a.addEventListener("change", (o) => {
+          v[+o.target.dataset.i].cat = o.target.value;
+        }),
+      ),
+      e.querySelectorAll(".pdel").forEach((a) =>
+        a.addEventListener("click", (o) => {
+          (v.splice(+o.target.dataset.i, 1), Q());
+        }),
+      ));
+    const n = document.getElementById("btnSaveAll");
+    n &&
+      n.addEventListener("click", () => {
+        for (const o of v) {
+          ((k[o.merchant.toUpperCase().trim()] = o.cat),
+            w(o) && o.rate > 0 && (Z[o.cur] = o.rate));
+          const { isDup: s, ...i } = o;
+          m.push(i);
+        }
+        (m.sort((o, s) => (o.dateISO + o.time < s.dateISO + s.time ? 1 : -1)),
+          _());
+        const a = v.length;
+        ((v = []),
+          Q(),
+          W(),
+          y(a === 1 ? "Compra salva! 🎉" : a + " compras salvas! 🎉"));
+      });
+  }
+  {
+    const b = document.getElementById("btnPend");
+    if (b)
+      b.addEventListener("click", () => {
+        ((pendOnly = !pendOnly), N());
+      });
+  }
+  (document.getElementById("mPrev").addEventListener("click", () => {
+    ((S = new Date(S.getFullYear(), S.getMonth() - 1, 1)), N());
+  }),
+    document.getElementById("mNext").addEventListener("click", () => {
+      ((S = new Date(S.getFullYear(), S.getMonth() + 1, 1)), N());
+    }));
+  function le(e) {
+    const t = e.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function N() {
+    document.getElementById("mName").textContent = le(S);
+    let e = m.filter((o) => {
+      const s = O(o.dateISO);
+      return (
+        s.getFullYear() === S.getFullYear() && s.getMonth() === S.getMonth()
+      );
+    });
+    document.getElementById("mTotal").textContent = M(e);
+    const t = document.getElementById("listWrap");
+    const pendCount = e.filter((o) => !o.received).length;
+    const fbEl = document.getElementById("filterBar"),
+      bpEl = document.getElementById("btnPend");
+    if (fbEl && bpEl) {
+      fbEl.hidden = !e.length;
+      bpEl.setAttribute("aria-pressed", pendOnly ? "true" : "false");
+      bpEl.textContent = "📦 Só o que falta chegar (" + pendCount + ")";
+    }
+    const tudoChegou = e.length > 0 && pendCount === 0;
+    if (pendOnly) e = e.filter((o) => !o.received);
+    if (!e.length) {
+      if (pendOnly) {
+        t.innerHTML = tudoChegou
+          ? '<div class="empty">Tudo que voc\u00ea comprou neste m\u00eas j\u00e1 chegou! \u{1F389}</div>'
+          : '<div class="empty">Nada pendente por aqui.</div>';
+        return;
+      }
+      t.innerHTML =
+        '<div class="empty">Nenhuma compra neste mês ainda.<br>Cole um SMS na aba <b>Lançar</b> ➕</div>';
+      return;
+    }
+    const n = {};
+    e.forEach((o) => {
+      (n[o.dateISO] ??= []).push(o);
+    });
+    let a = "";
+    (Object.keys(n)
+      .sort()
+      .reverse()
+      .forEach((o) => {
+        const s = O(o);
+        ((a +=
+          '<div class="daygroup"><div class="dayhead">' +
+          s.toLocaleDateString("pt-BR", {
+            weekday: "short",
+            day: "2-digit",
+            month: "2-digit",
+          }) +
+          "</div>"),
+          n[o].forEach((i) => {
+            a +=
+              '<div class="itemrow"><button type="button" class="chk" data-chk="' +
+              i.id +
+              '" aria-pressed="' +
+              (i.received ? 'true' : 'false') +
+              '" aria-label="Marcar que chegou" title="Marcar que chegou">✓</button>' +
+              '<button class="item' +
+              (i.received ? ' done' : '') +
+              '" data-id="' +
+              i.id +
+              '"><span class="l"><span class="desc">' +
+              u(i.desc || i.merchant) +
+              '</span><span class="m2"><span class="chip">' +
+              u(i.cat) +
+              "</span>" +
+              (w(i) ? f(i.value, i.cur) + " · " : "") +
+              (i.desc ? u(i.merchant) + " · " : "") +
+              (i.cardFinal ? "💳 •" + i.cardFinal : "") +
+              '</span></span><span class="val">' +
+              f(R(i), "BRL") +
+              "</span></button></div>";
+          }),
+          (a += "</div>"));
+      }),
+      (t.innerHTML = a),
+      t
+        .querySelectorAll(".item")
+        .forEach((o) => o.addEventListener("click", () => Se(o.dataset.id))),
+      t.querySelectorAll(".chk").forEach((o) =>
+        o.addEventListener("click", () => {
+          const c = m.find((s) => s.id === o.dataset.chk);
+          if (!c) return;
+          ((c.received = !c.received),
+            _(),
+            N(),
+            y(c.received ? "Chegou ✅" : "Desmarcado"));
+        }),
+      ));
+  }
+  function Se(e) {
+    const t = m.find((a) => a.id === e);
+    if (!t) return;
+    const n = document.createElement("div");
+    ((n.className = "modal-bg"),
+      (n.innerHTML =
+        '<div class="modal" role="dialog" aria-label="Editar compra"><h3>' +
+        u(t.merchant) +
+        '</h3><div class="mmeta">' +
+        (w(t) ? f(t.value, t.cur) + " ≈ " : "") +
+        f(R(t), "BRL") +
+        " · " +
+        h(t.dateISO) +
+        (t.time ? " às " + t.time : "") +
+        (t.cardName ? " · 💳 " + u(t.cardName) + " •" + t.cardFinal : "") +
+        "</div>" +
+        (w(t)
+          ? '<label>Valor em R$ (ajuste pela fatura se quiser)</label><input type="text" inputmode="decimal" id="eBRL" value="' +
+            j(R(t)) +
+            '">'
+          : "") +
+        '<label>O que foi essa compra?</label><input type="text" id="eDesc" value="' +
+        u(t.desc) +
+        '" placeholder="ex.: presente da mãe"><label>Categoria</label><select id="eCat">' +
+        ce
+          .map(
+            (a) =>
+              "<option" +
+              (a === t.cat ? " selected" : "") +
+              ">" +
+              a +
+              "</option>",
+          )
+          .join("") +
+        '</select><div class="rowbtns"><button class="btn-primary" id="eSave">Salvar</button><button class="btn-danger-ghost" id="eDel">Excluir</button></div><button class="btn-secondary" id="eClose">Cancelar</button></div>'),
+      document.getElementById("compras-app").appendChild(n),
+      n.addEventListener("click", (a) => {
+        a.target === n && n.remove();
+      }),
+      n.querySelector("#eClose").addEventListener("click", () => n.remove()),
+      n.querySelector("#eSave").addEventListener("click", () => {
+        ((t.desc = n.querySelector("#eDesc").value),
+          (t.cat = n.querySelector("#eCat").value));
+        const a = n.querySelector("#eBRL");
+        if (a) {
+          const o = pe(a.value);
+          o > 0 && (t.valueBRL = $(o));
+        }
+        ((k[t.merchant.toUpperCase().trim()] = t.cat),
+          _(),
+          n.remove(),
+          N(),
+          y("Alterado ✅"));
+      }),
+      n.querySelector("#eDel").addEventListener("click", () => {
+        confirm("Excluir esta compra?") &&
+          ((m = m.filter((a) => a.id !== e)),
+          _(),
+          n.remove(),
+          N(),
+          W(),
+          y("Excluída 🗑️"));
+      }));
+  }
+  (document.querySelectorAll("#segPeriod button").forEach((e) =>
+    e.addEventListener("click", () => {
+      ((P = e.dataset.p),
+        document
+          .querySelectorAll("#segPeriod button")
+          .forEach((t) =>
+            t.setAttribute("aria-pressed", t === e ? "true" : "false"),
+          ),
+        (document.getElementById("customDates").hidden = P !== "custom"),
+        L());
+    }),
+  ),
+    document.getElementById("dIni").addEventListener("change", L),
+    document.getElementById("dFim").addEventListener("change", L),
+    document.getElementById("repCard").addEventListener("change", L));
+  function Y() {
+    const e = new Date();
+    if (P === "mes")
+      return [
+        new Date(e.getFullYear(), e.getMonth(), 1),
+        new Date(e.getFullYear(), e.getMonth() + 1, 0),
+      ];
+    if (P === "passado")
+      return [
+        new Date(e.getFullYear(), e.getMonth() - 1, 1),
+        new Date(e.getFullYear(), e.getMonth(), 0),
+      ];
+    if (P === "30") {
+      const a = new Date(e);
+      return (a.setDate(a.getDate() - 29), [a, e]);
+    }
+    const t = document.getElementById("dIni").value,
+      n = document.getElementById("dFim").value;
+    return [
+      t ? O(t) : new Date(e.getFullYear(), e.getMonth(), 1),
+      n ? O(n) : e,
+    ];
+  }
+  function ee() {
+    const [e, t] = Y(),
+      n = b(e),
+      a = b(t),
+      o = document.getElementById("repCard").value;
+    return m
+      .filter((s) => s.dateISO >= n && s.dateISO <= a)
+      .filter((s) => o === "__all" || "•" + s.cardFinal === o)
+      .sort((s, i) => (s.dateISO + s.time < i.dateISO + i.time ? -1 : 1));
+  }
+  function we() {
+    const e = document.getElementById("repCard"),
+      t = [
+        ...new Set(m.filter((a) => a.cardFinal).map((a) => "•" + a.cardFinal)),
+      ],
+      n = e.value;
+    e.innerHTML =
+      '<option value="__all">💳 Todos os cartões</option>' +
+      t
+        .map((a) => {
+          const o = m.find((s) => "•" + s.cardFinal === a);
+          return (
+            '<option value="' +
+            a +
+            '"' +
+            (a === n ? " selected" : "") +
+            ">💳 " +
+            u(o.cardName || "Cartão") +
+            " " +
+            a +
+            "</option>"
+          );
+        })
+        .join("");
+  }
+  function L() {
+    we();
+    const e = ee(),
+      [t, n] = Y();
+    let a =
+      '<div class="big">' +
+      M(e) +
+      '</div><div class="n">' +
+      e.length +
+      " compra" +
+      (e.length === 1 ? "" : "s") +
+      " de " +
+      h(b(t)) +
+      " até " +
+      h(b(n)) +
+      "</div>";
+    (X(e).forEach(([o, s]) => {
+      a +=
+        '<div class="catrow"><span class="cn">' +
+        u(o) +
+        '</span><span class="cv">' +
+        s +
+        "</span></div>";
+    }),
+      (document.getElementById("repPrev").innerHTML = a),
+      (document.getElementById("btnPdf").disabled = !e.length),
+      (document.getElementById("btnPng").disabled = !e.length));
+  }
+  (document.getElementById("btnPdf").addEventListener("click", () => {
+    const e = ee();
+    if (!e.length) return;
+    const [t, n] = Y(),
+      a = document.getElementById("repCard"),
+      o =
+        a.value === "__all"
+          ? "Todos os cartões"
+          : a.options[a.selectedIndex].text.replace("💳 ", ""),
+      s = M(e);
+    let i =
+      '<div class="ph"><h1>Relatório de Compras</h1><div class="pmeta">Período: ' +
+      h(b(t)) +
+      " a " +
+      h(b(n)) +
+      " · Cartão: " +
+      u(o) +
+      " · Gerado em " +
+      h(b(new Date())) +
+      '</div></div><div class="ptot">Total do período: ' +
+      s +
+      " (" +
+      e.length +
+      ' compras)</div><table><thead><tr><th>Resumo por categoria</th><th class="num">Valor</th></tr></thead><tbody>';
+    (X(e).forEach(([c, d]) => {
+      i +=
+        '<tr class="catsum"><td>' +
+        u(c) +
+        '</td><td class="num">' +
+        d +
+        "</td></tr>";
+    }),
+      (i +=
+        '<tr class="total"><td>Total</td><td class="num">' +
+        s +
+        "</td></tr></tbody></table>"),
+      (i +=
+        '<table><thead><tr><th>Data</th><th>Compra</th><th>Cartão</th><th>Categoria</th><th class="num">Valor</th></tr></thead><tbody>'),
+      e.forEach((c) => {
+        i +=
+          "<tr><td>" +
+          h(c.dateISO) +
+          (c.time ? '<div class="sub">' + c.time + "</div>" : "") +
+          "</td><td>" +
+          u(c.desc || c.merchant) +
+          (c.desc ? '<div class="sub">' + u(c.merchant) + "</div>" : "") +
+          "</td><td>" +
+          (c.cardFinal ? u(c.cardName || "") + " •" + c.cardFinal : "—") +
+          "</td><td>" +
+          u(c.cat) +
+          '</td><td class="num">' +
+          f(R(c), "BRL") +
+          (w(c) ? '<div class="sub">' + f(c.value, c.cur) + "</div>" : "") +
+          "</td></tr>";
+      }),
+      (i +=
+        '<tr class="total"><td colspan="4">Total</td><td class="num">' +
+        s +
+        '</td></tr></tbody></table><div class="foot">Gerado pelo app Controle de Compras</div>'),
+      (document.getElementById("printArea").innerHTML = i),
+      setTimeout(() => {
+        try {
+          window.print();
+        } catch {}
+        setTimeout(() => {
+          y(
+            "Se a tela de impressão não abriu, use o botão Salvar como imagem 🖼️",
+          );
+        }, 1200);
+      }, 50));
+  }),
+    document.getElementById("btnPng").addEventListener("click", async () => {
+      const e = ee();
+      if (!e.length) return;
+      const [t, n] = Y(),
+        a = document.getElementById("repCard"),
+        o =
+          a.value === "__all"
+            ? "Todos os cartões"
+            : a.options[a.selectedIndex].text.replace("💳 ", ""),
+        s = M(e),
+        i = X(e),
+        c = 1080,
+        d = 64,
+        x = 1,
+        T = 86,
+        te = 330,
+        ae = i.length * 54 + 120,
+        E = te + ae + 70 + e.length * T + 110,
+        A = document.createElement("canvas");
+      ((A.width = c * x), (A.height = E * x));
+      const r = A.getContext("2d");
+      r.scale(x, x);
+      const z = "#1B5C9E",
+        D = "#131C26",
+        F = "#5C6B7A",
+        H = "#D9E2EB";
+      ((r.fillStyle = "#FFFFFF"), r.fillRect(0, 0, c, E));
+      const l = (g, B) =>
+        (r.font =
+          g + " " + B + 'px -apple-system,"Segoe UI",Roboto,sans-serif');
+      let p = d + 30;
+      ((r.fillStyle = z),
+        l(800, 44),
+        r.fillText("Relatório de Compras", d, p),
+        (p += 44),
+        (r.fillStyle = F),
+        l(400, 26),
+        r.fillText("Período: " + h(b(t)) + " a " + h(b(n)), d, p),
+        (p += 34),
+        r.fillText("Cartão: " + o + "  ·  Gerado em " + h(b(new Date())), d, p),
+        (p += 44),
+        (r.strokeStyle = z),
+        (r.lineWidth = 4),
+        r.beginPath(),
+        r.moveTo(d, p),
+        r.lineTo(c - d, p),
+        r.stroke(),
+        (p += 64),
+        (r.fillStyle = D),
+        l(800, s.length > 22 ? 36 : 52),
+        r.fillText(s, d, p),
+        (r.fillStyle = F),
+        l(400, 26),
+        r.fillText(
+          e.length + " compras",
+          c - d - r.measureText(e.length + " compras").width,
+          p,
+        ),
+        (p += 64),
+        l(700, 26),
+        (r.fillStyle = F),
+        r.fillText("POR CATEGORIA", d, p),
+        (p += 16),
+        i.forEach(([g, B]) => {
+          ((p += 54),
+            (r.fillStyle = D),
+            l(400, 28),
+            r.fillText(g, d, p),
+            l(700, 28));
+          const q = B;
+          (r.fillText(q, c - d - r.measureText(q).width, p),
+            (r.strokeStyle = H),
+            (r.lineWidth = 1),
+            r.beginPath(),
+            r.moveTo(d, p + 14),
+            r.lineTo(c - d, p + 14),
+            r.stroke());
+        }),
+        (p += 90),
+        (r.fillStyle = F),
+        l(700, 26),
+        r.fillText("COMPRAS", d, p),
+        (p += 10),
+        e.forEach((g) => {
+          ((p += 44), (r.fillStyle = D), l(700, 28));
+          let B = g.desc || g.merchant;
+          (B.length > 38 && (B = B.slice(0, 37) + "…"), r.fillText(B, d, p));
+          const q = f(R(g), "BRL");
+          (r.fillText(q, c - d - r.measureText(q).width, p),
+            (p += 32),
+            (r.fillStyle = F),
+            l(400, 24));
+          let K =
+            (w(g) ? f(g.value, g.cur) + "  ·  " : "") +
+            h(g.dateISO) +
+            (g.time ? " " + g.time : "") +
+            "  ·  " +
+            g.cat.replace(/^\S+\s/, "") +
+            (g.cardFinal
+              ? "  ·  " + (g.cardName || "cartão") + " •" + g.cardFinal
+              : "");
+          (K.length > 62 && (K = K.slice(0, 61) + "…"),
+            r.fillText(K, d, p),
+            (r.strokeStyle = H),
+            (r.lineWidth = 1),
+            r.beginPath(),
+            r.moveTo(d, p + 16),
+            r.lineTo(c - d, p + 16),
+            r.stroke(),
+            (p += 10));
+        }),
+        (p += 64),
+        (r.fillStyle = F),
+        l(400, 22),
+        r.fillText("Gerado pelo app Controle de Compras", d, p));
+      const Ie = "compras-" + b(t) + "-a-" + b(n) + ".png",
+        U = document.createElement("a");
+      ((U.href = A.toDataURL("image/png")),
+        (U.download = Ie),
+        document.body.appendChild(U),
+        U.click(),
+        U.remove(),
+        y("Imagem gerada! 🖼️"));
+    }));
+  async function me() {
+    const e = JSON.stringify(
+        {
+          v: 1,
+          exportedAt: new Date().toISOString(),
+          items: m,
+          merchantMap: k,
+        },
+        null,
+        1,
+      ),
+      t = "backup-compras-" + b(new Date()) + ".json",
+      n = document.createElement("a");
+    ((n.href = "data:application/json;charset=utf-8," + encodeURIComponent(e)),
+      (n.download = t),
+      document.body.appendChild(n),
+      n.click(),
+      n.remove(),
+      (C = { at: Date.now(), count: m.length }),
+      localStorage.setItem(ie, JSON.stringify(C)),
+      ue(),
+      y("Backup salvo! 💾 Guarde o arquivo com carinho."));
+  }
+  (document.getElementById("btnBackup").addEventListener("click", me),
+    document.getElementById("bakWarnBtn").addEventListener("click", me));
+  function ue() {
+    const e = m.length - C.count,
+      t = C.at ? Math.floor((Date.now() - C.at) / 864e5) : null,
+      n =
+        m.length > 0 &&
+        ((C.at === 0 && m.length >= 3) ||
+          e >= 8 ||
+          (t !== null && t >= 7 && e > 0)),
+      a = document.getElementById("bakWarn");
+    ((a.hidden = !n),
+      n &&
+        (document.getElementById("bakWarnMsg").textContent =
+          C.at === 0
+            ? "Suas compras ficam só neste aparelho — salve um backup pra não correr risco de perder nada."
+            : e > 0
+              ? e +
+                " compra" +
+                (e === 1 ? "" : "s") +
+                " nova" +
+                (e === 1 ? "" : "s") +
+                " desde o último backup" +
+                (t >= 1
+                  ? " (há " + t + " dia" + (t === 1 ? "" : "s") + ")"
+                  : "") +
+                "."
+              : ""));
+  }
+  (document
+    .getElementById("btnRestore")
+    .addEventListener("click", () =>
+      document.getElementById("fileRestore").click(),
+    ),
+    document.getElementById("fileRestore").addEventListener("change", (e) => {
+      const t = e.target.files[0];
+      if (!t) return;
+      const n = new FileReader();
+      ((n.onload = () => {
+        try {
+          const a = JSON.parse(n.result);
+          if (!Array.isArray(a.items)) throw 0;
+          const o = new Set(m.map((i) => i.id));
+          let s = 0;
+          (a.items.forEach((i) => {
+            o.has(i.id) || (m.push(i), s++);
+          }),
+            Object.assign(k, a.merchantMap || {}),
+            m.sort((i, c) =>
+              i.dateISO + i.time < c.dateISO + c.time ? 1 : -1,
+            ),
+            _(),
+            W(),
+            L(),
+            y(
+              s +
+                " compra" +
+                (s === 1 ? "" : "s") +
+                " restaurada" +
+                (s === 1 ? "" : "s") +
+                " ✅",
+            ));
+        } catch {
+          y("Esse arquivo não parece um backup válido 🤔");
+        }
+      }),
+        n.readAsText(t),
+        (e.target.value = ""));
+    }));
+  let ge = null;
+  function y(e) {
+    document.querySelectorAll("#compras-app .toast").forEach((n) => n.remove());
+    const t = document.createElement("div");
+    ((t.className = "toast"),
+      (t.textContent = e),
+      document.getElementById("compras-app").appendChild(t),
+      clearTimeout(ge),
+      (ge = setTimeout(() => t.remove(), 3500)));
+  }
+  function W() {
+    const e = new Date(),
+      t = m.filter((n) => {
+        const a = O(n.dateISO);
+        return (
+          a.getFullYear() === e.getFullYear() && a.getMonth() === e.getMonth()
+        );
+      });
+    ((document.getElementById("headSub").textContent = t.length
+      ? le(e) +
+        ": " +
+        M(t) +
+        " em " +
+        t.length +
+        " compra" +
+        (t.length === 1 ? "" : "s")
+      : "Cole o SMS do cartão e pronto"),
+      ue());
+  }
+  (W(), L());
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", Ce);
+} else {
+  Ce();
+}
+})();
+</script>
+</body>
+</html>
