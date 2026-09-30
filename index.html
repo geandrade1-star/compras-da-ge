@@ -449,15 +449,19 @@ function Ce() {
     const t = e
         .split(/(?=compra aprovada)/i)
         .map((o) => o.trim())
-        .filter((o) => /valor\s+\S/i.test(o)),
+        .filter((o) => /valor\s+\S|aprovada de\s+\S/i.test(o)),
       n = [],
       a = new Date();
     a.setHours(23, 59, 59);
     for (const o of t) {
       const s = o.replace(/\s+/g, " "),
-        i = s.match(
-          /valor\s+([RU][S$D]{0,3}|EUR|€|£|GBP)\s*([\d.]+,\d{2}|[\d.]+)/i,
-        );
+        i =
+          s.match(
+            /valor\s+([RU][S$D]{0,3}|EUR|€|£|GBP)\s*([\d.]+,\d{2}|[\d.]+)/i,
+          ) ||
+          s.match(
+            /aprovada de\s+([RU][S$D]{0,3}|EUR|€|£|GBP)\s*([\d.]+,\d{2}|[\d.]+)/i,
+          );
       if (!i) continue;
       const c = parseFloat(i[2].replace(/\./g, "").replace(",", "."));
       if (!isFinite(c) || c <= 0) continue;
@@ -474,14 +478,18 @@ function Ce() {
         te = T ? T[1].trim() : "",
         ae = T ? T[2] : (s.match(/final\s+(\d{4})/i) || [])[1] || "";
       let I = "";
-      const ne = s.match(/final\s+\d{4}\s*[-–—]\s*(.+?)\s+valor\s/i);
+      const ne = s.match(/final\s+\d{4}\s*[-–—]\s*(.+?)\s+valor\s/i),
+        cu = s.match(/aprovada de\s+\S+\s*[\d.,]+\s+em\s+(.+?),\s*\d{1,2}\/\d{1,2}/i);
       if (ne) I = ne[1].trim();
+      else if (cu) I = cu[1].trim();
       else {
         const l = s.match(/[-–—]\s*([^-–—]+?)\s+valor\s/i);
         l && (I = l[1].trim());
       }
       I || (I = "(não identificado)");
-      const E = s.match(/em\s+(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/i);
+      const E =
+        s.match(/em\s+(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/i) ||
+        s.match(/,\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
       let A = new Date();
       if (E) {
         let l = E[3]
@@ -492,7 +500,7 @@ function Ce() {
         ((A = new Date(l, +E[2] - 1, +E[1])),
           !E[3] && A > a && A.setFullYear(A.getFullYear() - 1));
       }
-      const r = s.match(/[àa]s\s+(\d{1,2})h(\d{2})/i),
+      const r = s.match(/[àa]s\s+(\d{1,2})[h:](\d{2})/i),
         z = r ? String(r[1]).padStart(2, "0") + ":" + r[2] : "",
         D = b(A),
         F = m.some(
