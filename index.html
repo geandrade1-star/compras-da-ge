@@ -246,7 +246,7 @@
       <div class="prev" id="repPrev"></div>
       <button class="btn-primary" id="btnPdf">📄 Gerar PDF</button>
       <button class="btn-secondary" id="btnPng">🖼️ Salvar como imagem</button>
-      <p class="hint" id="pdfHint">O PDF abre a tela de impressão do celular — lá você toca em <b>Compartilhar → Salvar em Arquivos</b> (vira PDF) ou manda direto no WhatsApp.</p>
+      <p class="hint" id="pdfHint">Os dois botões abrem o compartilhar do iPhone: escolha <b>Salvar em Arquivos</b>, <b>Salvar Imagem</b> ou mande direto no WhatsApp.</p>
     </div>
     <div class="card">
       <h2>Backup dos dados</h2>
@@ -966,7 +966,7 @@ function Ce() {
       (document.getElementById("btnPdf").disabled = !e.length),
       (document.getElementById("btnPng").disabled = !e.length));
   }
-  (document.getElementById("btnPdf").addEventListener("click", () => {
+  ((document.getElementById("btnPdfOld")||document.createElement("i")).addEventListener("click", () => {
     const e = ee();
     if (!e.length) return;
     const [t, n] = Y(),
@@ -1037,7 +1037,7 @@ function Ce() {
         }, 1200);
       }, 50));
   }),
-    document.getElementById("btnPng").addEventListener("click", async () => {
+    window.__makeReportCanvas = async function () {
       const e = ee();
       if (!e.length) return;
       const [t, n] = Y(),
@@ -1152,15 +1152,66 @@ function Ce() {
         (r.fillStyle = F),
         l(400, 22),
         r.fillText("Gerado pelo app Controle de Compras", d, p));
-      const Ie = "compras-" + b(t) + "-a-" + b(n) + ".png",
-        U = document.createElement("a");
-      ((U.href = A.toDataURL("image/png")),
-        (U.download = Ie),
-        document.body.appendChild(U),
-        U.click(),
-        U.remove(),
-        y("Imagem gerada! 🖼️"));
-    }));
+      return { A: A, name: "compras-" + b(t) + "-a-" + b(n), toast: y };
+    });
+  (function () {
+    async function share(blob, filename, type, toast) {
+      const file = new File([blob], filename, { type: type });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Relatório de Compras" });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+      const url = URL.createObjectURL(blob);
+      const ov = document.getElementById("shareOverlay");
+      const body = document.getElementById("shareBody");
+      body.innerHTML = "";
+      if (type === "image/png") {
+        const img = document.createElement("img");
+        img.src = url; img.alt = "Relatório"; img.style.width = "100%"; img.style.display = "block";
+        body.appendChild(img);
+        document.getElementById("shareTip").textContent = "Toque e segure na imagem → Salvar na Fotos (ou Compartilhar).";
+      } else {
+        const a = document.createElement("a");
+        a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "📄 Abrir o PDF";
+        a.className = "btn-primary"; a.style.display = "inline-block"; a.style.textDecoration = "none";
+        body.appendChild(a);
+        document.getElementById("shareTip").textContent = "Abra o PDF e use o botão de compartilhar do iPhone pra salvar em Arquivos ou mandar no WhatsApp.";
+      }
+      ov.hidden = false;
+    }
+    document.getElementById("shareClose").addEventListener("click", function () {
+      document.getElementById("shareOverlay").hidden = true;
+    });
+    document.getElementById("btnPng").addEventListener("click", async function () {
+      const r = await window.__makeReportCanvas();
+      if (!r) return;
+      const blob = await new Promise(function (res) { r.A.toBlob(res, "image/png"); });
+      await share(blob, r.name + ".png", "image/png", r.toast);
+    });
+    document.getElementById("btnPdf").addEventListener("click", async function () {
+      const r = await window.__makeReportCanvas();
+      if (!r) return;
+      if (!window.jspdf || !window.jspdf.jsPDF) { r.toast("Não consegui montar o PDF agora. Use Salvar como imagem 🖼️"); return; }
+      const W = r.A.width, PH = Math.round(W * 1.4142);
+      const doc = new window.jspdf.jsPDF({ orientation: "portrait", unit: "px", format: [W, PH], hotfixes: ["px_scaling"] });
+      for (let y0 = 0, page = 0; y0 < r.A.height; y0 += PH, page++) {
+        const h0 = Math.min(PH, r.A.height - y0);
+        const c = document.createElement("canvas");
+        c.width = W; c.height = PH;
+        const g = c.getContext("2d");
+        g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, W, PH);
+        g.drawImage(r.A, 0, y0, W, h0, 0, 0, W, h0);
+        if (page > 0) doc.addPage([W, PH], "portrait");
+        doc.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, W, PH);
+      }
+      const blob = doc.output("blob");
+      await share(blob, r.name + ".pdf", "application/pdf", r.toast);
+    });
+  })();
   async function me() {
     const e = JSON.stringify(
         {
@@ -1377,5 +1428,11 @@ if (document.readyState === "loading") {
 }
 })();
 </script>
+<div id="shareOverlay" hidden style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));overflow:auto">
+  <div id="shareBody" style="max-width:100%;max-height:75vh;overflow:auto;background:#fff;border-radius:12px"></div>
+  <p id="shareTip" style="color:#fff;text-align:center;margin:0;font-size:15px"></p>
+  <button id="shareClose" class="btn-secondary" type="button">Fechar</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
